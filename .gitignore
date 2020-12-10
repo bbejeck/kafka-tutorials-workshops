@@ -11,3 +11,6 @@ build/
 # Ignore Gradle build output directory
 build
 *.env
+gradle-wrapper*
+gradlew.bat
+/gradlew

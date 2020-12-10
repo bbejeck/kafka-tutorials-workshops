@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-
+ @SuppressWarnings("unchecked")
 public class KafkaStreamsPunctuation {
 
 
@@ -68,7 +68,7 @@ public class KafkaStreamsPunctuation {
         final KStream<String, LoginTime> loginTimeStream = builder.stream(loginTimeInputTopic, Consumed.with(Serdes.String(), loginTimeSerde));
 
         loginTimeStream.transform(getTransformerSupplier(loginTimeStore), Named.as("max-login-time-transformer"),loginTimeStore)
-                      .to(outputTopic, Produced.with(Serdes.String(), Serdes.Long()));
+                      .mapValues(v -> v.toString()).to(outputTopic, Produced.with(Serdes.String(), Serdes.String()));
 
         return builder.build();
     }
@@ -139,22 +139,6 @@ public class KafkaStreamsPunctuation {
 
         specificAvroSerde.configure(serdeConfig, false);
         return specificAvroSerde;
-    }
-
-    public void createTopics(final Properties envProps) {
-        final Map<String, Object> config = new HashMap<>();
-        config.put("bootstrap.servers", envProps.getProperty("bootstrap.servers"));
-        try (final AdminClient client = AdminClient.create(config)) {
-
-        final List<NewTopic> topics = new ArrayList<>();
-
-            topics.add(new NewTopic(
-                    envProps.getProperty("output.topic.name"),
-                    Integer.parseInt(envProps.getProperty("output.topic.partitions")),
-                    Short.parseShort(envProps.getProperty("output.topic.replication.factor"))));
-
-            client.createTopics(topics);
-        }
     }
 
     public Properties loadEnvProperties(String fileName) throws IOException {
