@@ -211,3 +211,49 @@ ccloud kafka topic consume --print-keys --from-beginning
 #### 7. Cloud UI Demo
 
 Now we'll go to [Confluent Cloud](https://login.confluent.io/]) and login. Then we'll take a look at the CCloud UI and go over the available information. 
+
+
+#### 8. Testing - "Look Ma no hands!"
+
+Last, but not least, we should take a couple of minutes to talks about testing. Let's take this 
+opportunity to shut down your `ccloud-stack` resources.  Run the following command:
+
+```
+ccloud::destroy_ccloud_stack $SERVICE_ACCOUNT_ID
+```
+The `SERVICE_ACCOUNT_ID` was generated when you created the `ccloud-stack`.  This would also be a good time to shut down the connect container by running
+
+```
+docker-compose down
+```
+
+So now we'll see how you can test locally, without the need for any of the resources we used in our example.  But our test code uses the same Kafka Streams application as written.  Run this command to test our code:
+
+```
+./gradlew test
+```
+
+The test should pass.  It's possible to unit-test with the exact Kafka Streams application because we'er using the [ToplogyTestDriver](https://docs.confluent.io/5.5.0/streams/developer-guide/test-streams.html#testing-a-streams-application) and mocked version of Schema Registry.  Let's take a look at the test properites.  You'll see the Schema Registry endpoint supplied as 
+
+```
+schema.registry.url=mock://kafka-streams-schedule-operations-test
+```
+
+This mocks a live Schema Registry instance and allows us to use the exisiting code as is, we only need to swap out the values in the properties file.
+
+
+#### 9. Clean Up
+
+If you haven't done so already, now is a good time to shut down all the resources we've created and started.  Because your Confluent Cloud cluster is using real cloud resources and is billable, delete the connector and clean up your Confluent Cloud environment when you complete this tutorial. You can use Confluent Cloud CLI or Confluent UI, but for this tutorial you can use the ccloud_library.sh library again. Pass in the `SERVICE_ACCOUNT_ID` that was generated when the `ccloud-stack was` created.
+
+First clean up the `ccloud-stack`:
+
+```
+ccloud::destroy_ccloud_stack $SERVICE_ACCOUNT_ID
+```
+
+Then shut down the connect docker container:
+
+```
+docker-compose down
+```
